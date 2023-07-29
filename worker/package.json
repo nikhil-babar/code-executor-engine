@@ -1,0 +1,21 @@
+{
+  "name": "docker-rode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "debug": "./script.sh && node --inspect=0.0.0.0:9229 main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "dockerode": "^3.3.5",
+    "mongoose": "^7.4.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1"
+  }
+}
