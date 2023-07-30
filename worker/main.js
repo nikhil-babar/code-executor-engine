@@ -1,19 +1,18 @@
 const amqp = require("amqplib");
 const CodeExecutor = require("./utils/CodeExecutor");
-const mongoose = require("./utils/mongodb");
-const Output = require("./models/output");
+require("./utils/mongodb");
+require('dotenv').config();
 
-const CODE_QUEUE = "code-execution";
-const AMQP_URL = "amqp://rabbitmq:5672";
+const Output = require("./models/output");
 
 async function connect() {
   try {
-    const connection = await amqp.connect(AMQP_URL);
+    const connection = await amqp.connect(process.env.AMQP_URL);
     const channel = await connection.createChannel();
 
-    await channel.assertQueue(CODE_QUEUE);
+    await channel.assertQueue(process.env.CODE_QUEUE);
 
-    channel.consume(CODE_QUEUE, async (job) => {
+    channel.consume(process.env.CODE_QUEUE, async (job) => {
       try {
         const jsonString = job.content.toString();
         const submission = JSON.parse(jsonString);
@@ -34,7 +33,7 @@ async function connect() {
         });
 
         await executor.runCode();
-
+      
         executor.on(executor.OUPUT_STATUS.success, async (data) => {
           try {
             await new Output({

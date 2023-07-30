@@ -8,15 +8,19 @@
           "name": "server",
           "type": "node",
           "request": "attach",
-          "port": 1000,
-          "remoteRoot": "/app/"
+          "restart": true,
+          "port": 9229,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/server/",
         },
         {
           "name": "worker",
           "type": "node",
           "request": "attach",
-          "port": 2000,
-          "remoteRoot": "/app/"
+          "port": 9222,
+          "restart": true,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/worker/",
         }
     ]
 }

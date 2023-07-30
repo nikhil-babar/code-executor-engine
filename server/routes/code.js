@@ -8,9 +8,7 @@ const msgQueue = new AMQP();
 router.post("/", async (req, res) => {
   try {
     const { code, input, filename, lang } = req.body;
-    console.log(req.body)
     if (!code || !filename || !lang || !input) return res.sendStatus(422);
-
 
     const submit_id = uuid();
 
