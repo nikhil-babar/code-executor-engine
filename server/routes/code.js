@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const config = require("../config");
 const Output = require("../models/output");
 const AMQP = require("../utils/amqp");
 const { v4: uuid } = require("uuid");
@@ -8,11 +9,14 @@ const msgQueue = new AMQP();
 router.post("/", async (req, res) => {
   try {
     const { code, input, filename, lang } = req.body;
-    if (!code || !filename || !lang || !input) return res.sendStatus(422);
+    if (!code || !filename || !lang) return res.sendStatus(422);
 
     const submit_id = uuid();
+    const queue = config.queue[`${lang}_queue`]
 
-    if (await msgQueue.sendJob({ submit_id, code, input, filename, lang })) {
+    if(!queue) return res.sendStatus(422)
+
+    if (msgQueue.sendJob({ submit_id, code, input, filename, lang }, queue)) {
       return res.status(201).json({ submit_id });
     } else {
       return res.sendStatus(500);
@@ -26,7 +30,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const submit_id = req.query.submit_id;
-    const output = await Output.find({ submit_id });
+    const output = await Output.findOne({ submit_id });
 
     if (!output) {
       return res.sendStatus(404);

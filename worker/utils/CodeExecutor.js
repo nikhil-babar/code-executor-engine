@@ -1,6 +1,6 @@
 const Docker = require("dockerode");
 const EventEmitter = require("events");
-const Volume = require('./Volume')
+const Volume = require("./Volume");
 const ROOT_DIR = "/app";
 const VOLUME = "shared_volume";
 
@@ -45,8 +45,8 @@ class CodeExecutor extends EventEmitter {
               });
 
               stream.on("end", () => {
-                const res = data.join("")
-                resolve(res)
+                const res = data.join("");
+                resolve(res);
               });
             }
           }
@@ -57,20 +57,6 @@ class CodeExecutor extends EventEmitter {
     }
   }
 
-  async cleanup() {
-    try {
-      const container = this.docker.getContainer(this.container_id);
-      const status = await container.inspect();
-
-      if (status.State.Running) await container.stop();
-
-      await container.remove();
-      this.volume.delete();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   async createContainer() {
     try {
       const container = await this.docker.createContainer({
@@ -78,7 +64,7 @@ class CodeExecutor extends EventEmitter {
         name: this.submit_id,
         Env: Object.entries({
           id: this.submit_id,
-          filename: this.filename.split('.')[0],
+          filename: this.filename.split(".")[0],
         }).map(([key, value]) => `${key}=${value}`),
         HostConfig: {
           Binds: [
@@ -99,19 +85,23 @@ class CodeExecutor extends EventEmitter {
     try {
       if (retry_no <= 0) {
         this.emit(this.OUPUT_STATUS.failed);
-        this.cleanup();
       }
 
       const res = await this.docker.getContainer(this.container_id).inspect();
 
       if (res.State.Status.localeCompare("exited") == 0) {
-        this.emit(this.OUPUT_STATUS.success, await this.collectLogs());
-        await this.cleanup();
+        let output = null;
+
+        try {
+          output = await this.collectLogs();
+        } catch (error) {}
+
+        this.emit(this.OUPUT_STATUS.success, output);
       } else {
         setTimeout(() => this.trackContainer({ retry_no: --retry_no }), 500);
       }
     } catch (error) {
-      throw error;
+      throw error
     }
   }
 
@@ -126,4 +116,4 @@ class CodeExecutor extends EventEmitter {
   }
 }
 
-module.exports = CodeExecutor
+module.exports = CodeExecutor;

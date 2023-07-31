@@ -23,27 +23,6 @@ class Volume {
       throw error;
     }
   }
-
-  async delete(folderPath = `${ROOT_DIR}/${this.volume}/${this.foldername}`) {
-    try {
-      const directory = await readdir(folderPath);
-
-      for (const dirs of directory) {
-        const subDirPath = path.join(folderPath, dirs);
-        const dirDescription = await lstat(subDirPath);
-
-        if (dirDescription.isDirectory()) {
-          await this.delete(subDirPath);
-        } else {
-          await unlink(subDirPath);
-        }
-      }
-
-      await rmdir(folderPath);
-    } catch (error) {
-      console.error(error);
-    }
-  }
 }
 
 module.exports = Volume

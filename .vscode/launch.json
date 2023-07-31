@@ -14,13 +14,40 @@
           "localRoot": "${workspaceFolder}/server/",
         },
         {
-          "name": "worker",
+          "name": "java",
           "type": "node",
           "request": "attach",
           "port": 9222,
           "restart": true,
           "remoteRoot": "/app/",
           "localRoot": "${workspaceFolder}/worker/",
+        },
+        {
+          "name": "cpp",
+          "type": "node",
+          "request": "attach",
+          "port": 9223,
+          "restart": true,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/worker/",
+        },
+        {
+          "name": "python",
+          "type": "node",
+          "request": "attach",
+          "port": 9224,
+          "restart": true,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/worker/",
+        },
+        {
+          "name": "cleanup",
+          "type": "node",
+          "request": "attach",
+          "port": 9227,
+          "restart": true,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/cleanup/",
         }
     ]
 }

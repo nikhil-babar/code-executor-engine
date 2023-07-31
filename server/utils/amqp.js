@@ -1,4 +1,5 @@
 const amqp = require("amqplib");
+const config = require('../config')
 require('dotenv').config()
 
 class AMQP {
@@ -26,7 +27,9 @@ class AMQP {
       const connection = await amqp.connect(process.env.AMQP_URL);
       const channel = await connection.createChannel();
 
-      await channel.assertQueue(process.env.QUEUE);
+      for(const queue of Object.values(config.queue)){
+        await channel.assertQueue(queue)
+      }
 
       return channel;
     } catch (error) {
@@ -34,16 +37,16 @@ class AMQP {
     }
   }
 
-  async sendJob(job) {
+  sendJob(job, queue) {
     try {
       while (this.status.localeCompare(this.AMQP_STATUS.connecting) == 0);
 
       if (this.status.localeCompare(this.AMQP_STATUS.failure) == 0) {
-        return Promise.reject({ message: "connection failed" });
+        return false;
       }
 
-      await this.connection.sendToQueue(
-        process.env.QUEUE,
+      this.connection.sendToQueue(
+        queue,
         Buffer.from(JSON.stringify(job))
       );
 

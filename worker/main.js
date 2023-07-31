@@ -1,7 +1,7 @@
 const amqp = require("amqplib");
 const CodeExecutor = require("./utils/CodeExecutor");
 require("./utils/mongodb");
-require('dotenv').config();
+require("dotenv").config();
 
 const Output = require("./models/output");
 
@@ -11,6 +11,7 @@ async function connect() {
     const channel = await connection.createChannel();
 
     await channel.assertQueue(process.env.CODE_QUEUE);
+    await channel.assertQueue(process.env.CLEANUP_QUEUE);
 
     channel.consume(process.env.CODE_QUEUE, async (job) => {
       try {
@@ -33,7 +34,7 @@ async function connect() {
         });
 
         await executor.runCode();
-      
+
         executor.on(executor.OUPUT_STATUS.success, async (data) => {
           try {
             await new Output({
@@ -41,6 +42,16 @@ async function connect() {
               output: data,
               status: 200,
             }).save();
+
+            channel.sendToQueue(
+              process.env.CLEANUP_QUEUE,
+              Buffer.from(
+                JSON.stringify({
+                  submit_id: submission.submit_id,
+                  container_id: executor.container_id,
+                })
+              )
+            );
           } catch (error) {
             console.error(error);
           }
@@ -52,11 +63,20 @@ async function connect() {
               ...submission,
               status: 422,
             }).save();
+
+            channel.sendToQueue(
+              process.env.CLEANUP_QUEUE,
+              Buffer.from(
+                JSON.stringify({
+                  submit_id: submission.submit_id,
+                  container_id: executor.container_id,
+                })
+              )
+            );
           } catch (error) {
             console.error(error);
           }
         });
-        
       } catch (error) {
         throw error;
       }
