@@ -34,9 +34,7 @@ services:
     container_name: server
     links:
       - mongodb
-    volumes:
-      - ./server:/app/
-      - /app/node_modules
+    command: ["npm", "run", "debug"]
 
   cleanup:
     image: "cleanup:latest"
@@ -47,12 +45,11 @@ services:
       - rabbitmq
     networks:
       - code-engine
-    container_name: cleanup
     volumes:
       - shared_volume:/app/shared_volume
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./cleanup:/app/
-      - /app/node_modules
+    container_name: cleanup
+    command: ["npm", "run", "debug"]
 
   java: &worker_template
     image: "worker:latest"
@@ -70,11 +67,10 @@ services:
     volumes:
       - shared_volume:/app/shared_volume
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./worker:/app/
-      - /app/node_modules
-    container_name: java
     links:
       - mongodb
+    container_name: java
+    command: ["npm", "run", "debug"]
 
   cpp:
     <<: *worker_template
@@ -93,6 +89,24 @@ services:
       CODE_QUEUE: "PYTHON"
       MONGO_URL: "mongodb://mongodb:27017/database"
     container_name: python
+
+  javascript:
+    <<: *worker_template
+    ports:
+      - 9225:9229
+    environment:
+      CODE_QUEUE: "JAVASCRIPT"
+      MONGO_URL: "mongodb://mongodb:27017/database"
+    container_name: javascript
+
+  c:
+    <<: *worker_template
+    ports:
+      - 9226:9229
+    environment:
+      CODE_QUEUE: "C"
+      MONGO_URL: "mongodb://mongodb:27017/database"
+    container_name: c_worker
 
 networks:
   code-engine:

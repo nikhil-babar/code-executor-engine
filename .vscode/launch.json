@@ -41,6 +41,24 @@
           "localRoot": "${workspaceFolder}/worker/",
         },
         {
+          "name": "javascript",
+          "type": "node",
+          "request": "attach",
+          "port": 9225,
+          "restart": true,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/worker/",
+        },
+        {
+          "name": "c",
+          "type": "node",
+          "request": "attach",
+          "port": 9226,
+          "restart": true,
+          "remoteRoot": "/app/",
+          "localRoot": "${workspaceFolder}/worker/",
+        }, 
+        {
           "name": "cleanup",
           "type": "node",
           "request": "attach",
@@ -48,6 +66,6 @@
           "restart": true,
           "remoteRoot": "/app/",
           "localRoot": "${workspaceFolder}/cleanup/",
-        }
+        }, 
     ]
 }

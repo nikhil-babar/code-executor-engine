@@ -4,5 +4,11 @@ while [ ! -d "./shared_volume/$id" ]; do
 done
 
 cd ./shared_volume/$id
+
 g++ -o $filename $filename.cpp
-./$filename
+
+if [ -f "input.txt" ]; then
+  ./$filename < input.txt
+else 
+  ./$filename
+fi

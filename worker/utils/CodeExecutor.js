@@ -19,10 +19,6 @@ class CodeExecutor extends EventEmitter {
     this.docker = new Docker();
     this.volume = new Volume({
       volume: VOLUME,
-      filename,
-      foldername: submit_id,
-      lang: this.lang,
-      content: this.code,
     });
     this.network = "code-engine";
   }
@@ -33,12 +29,14 @@ class CodeExecutor extends EventEmitter {
 
       return await new Promise((resolve, reject) => {
         container.logs(
-          { follow: true, stdout: true, stderr: true },
+          { follow: true, stdout: true, stderr: true, timestamps: false },
           async (err, stream) => {
             if (err) {
               reject(err);
             } else {
               let data = [];
+
+              stream.setEncoding('utf8');
 
               stream.on("data", (chunk) => {
                 data.push(chunk);
@@ -101,13 +99,26 @@ class CodeExecutor extends EventEmitter {
         setTimeout(() => this.trackContainer({ retry_no: --retry_no }), 500);
       }
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
   async runCode() {
     try {
-      await this.volume.create();
+      await this.volume.create({
+        filename: this.filename,
+        foldername: this.submit_id,
+        content: this.code,
+      });
+
+      if(this.input && this.input.length > 0){
+        await this.volume.create({
+          filename: 'input.txt',
+          foldername: this.submit_id,
+          content: this.input
+        })
+      }
+
       await this.createContainer();
       await this.trackContainer({ retry_no: 5 });
     } catch (error) {

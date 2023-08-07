@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "debug": "./script.sh && nodemon --inspect=0.0.0.0:9227 --legacy-watch --signal SIGINT --nolazy main.js"
+    "debug": "./script.sh && nodemon --inspect=0.0.0.0:9229 --legacy-watch --signal SIGINT --nolazy main.js",
+    "dev": "./script.sh && node main.js"
   },
   "keywords": [],
   "author": "",

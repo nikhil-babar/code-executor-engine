@@ -7,4 +7,4 @@ COPY . .
 RUN apk update && apk add bash
 RUN apk add --update docker openrc
 RUN rc-update add docker boot
-CMD [ "npm", "run", "debug"]
+CMD [ "npm", "run", "dev"]

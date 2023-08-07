@@ -2,7 +2,7 @@ const router = require("express").Router();
 const config = require("../config");
 const Output = require("../models/output");
 const AMQP = require("../utils/amqp");
-const { v4: uuid } = require("uuid");
+const randomString = require('randomstring')
 
 const msgQueue = new AMQP();
 
@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
     const { code, input, filename, lang } = req.body;
     if (!code || !filename || !lang) return res.sendStatus(422);
 
-    const submit_id = uuid();
+    const submit_id = randomString.generate(10);
     const queue = config.queue[`${lang}_queue`]
 
     if(!queue) return res.sendStatus(422)

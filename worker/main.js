@@ -22,7 +22,6 @@ async function connect() {
         if (
           !submission?.code ||
           !submission?.filename ||
-          !submission?.input ||
           !submission?.submit_id ||
           !submission?.lang
         ) {

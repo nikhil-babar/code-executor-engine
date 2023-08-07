@@ -1,28 +1,26 @@
-const { writeFile, mkdir, rmdir, readdir, unlink, lstat } =
+const { writeFile, mkdir } =
   require("fs").promises;
+const { existsSync } = require("fs");
 const path = require("path");
-const ROOT_DIR = "/app";
 
 class Volume {
-  constructor({ volume, filename, foldername, lang, content }) {
+  constructor({ volume }) {
     this.volume = volume;
-    this.filename = filename;
-    this.foldername = foldername;
-    this.content = content;
-    this.lang = lang;
   }
 
-  async create() {
+  async create({ filename, foldername, content }) {
     try {
-      const dirPath = `${ROOT_DIR}/${this.volume}/${this.foldername}`;
-      const filePath = path.join(dirPath, `${this.filename}`);
+      const dirPath = `${process.env.DOCKER_ROOT_DIR}/${this.volume}/${foldername}`;
+      const filePath = path.join(dirPath, `${filename}`);
 
-      await mkdir(dirPath);
-      await writeFile(filePath, this.content);
+      if (!existsSync(dirPath)) {
+        await mkdir(dirPath);
+      }
+      await writeFile(filePath, content);
     } catch (error) {
       throw error;
     }
   }
 }
 
-module.exports = Volume
+module.exports = Volume;

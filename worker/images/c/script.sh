@@ -5,10 +5,10 @@ done
 
 cd ./shared_volume/$id
 
-javac $filename.java
+gcc -o $filename $filename.c
 
 if [ -f "input.txt" ]; then
-  java $filename < input.txt
+  ./$filename < input.txt
 else 
-  java $filename
+  ./$filename
 fi

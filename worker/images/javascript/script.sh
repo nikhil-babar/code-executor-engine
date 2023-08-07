@@ -5,10 +5,8 @@ done
 
 cd ./shared_volume/$id
 
-javac $filename.java
-
 if [ -f "input.txt" ]; then
-  java $filename < input.txt
+  node $filename.js < input.txt
 else 
-  java $filename
+  node $filename.js
 fi
