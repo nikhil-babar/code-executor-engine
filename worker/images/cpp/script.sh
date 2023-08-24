@@ -5,10 +5,14 @@ done
 
 cd ./shared_volume/$id
 
-g++ -o $filename $filename.cpp
+touch output.txt
 
-if [ -f "input.txt" ]; then
-  ./$filename < input.txt
-else 
-  ./$filename
+g++ -o $filename $filename.cpp >> output.txt 2>&1
+
+if [ $? -eq 0 ]; then
+  if [ -f "input.txt" ]; then
+    ./$filename < input.txt >> output.txt 2>&1
+  else 
+    ./$filename >> output.txt 2>&1
+  fi
 fi

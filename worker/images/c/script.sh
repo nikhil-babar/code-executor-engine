@@ -5,10 +5,16 @@ done
 
 cd ./shared_volume/$id
 
-gcc -o $filename $filename.c
+touch output.txt
 
-if [ -f "input.txt" ]; then
-  ./$filename < input.txt
-else 
-  ./$filename
+gcc -o $filename $filename.c >> output.txt 2>&1
+
+if [ $? -eq 0 ]; then
+    if [ -f "input.txt" ]; then
+      ./$filename < input.txt >> output.txt 2>&1
+    else 
+      ./$filename >> output.txt 2>&1
+    fi
 fi
+
+

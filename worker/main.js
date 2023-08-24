@@ -13,72 +13,68 @@ async function connect() {
     await channel.assertQueue(process.env.CODE_QUEUE);
     await channel.assertQueue(process.env.CLEANUP_QUEUE);
 
-    channel.consume(process.env.CODE_QUEUE, async (job) => {
-      try {
-        const jsonString = job.content.toString();
-        const submission = JSON.parse(jsonString);
-        channel.ack(job);
+    channel.consume(process.env.CODE_QUEUE, (job) => {
+      const jsonString = job.content.toString();
+      const submission = JSON.parse(jsonString);
+      channel.ack(job);
 
-        if (
-          !submission?.code ||
-          !submission?.filename ||
-          !submission?.submit_id ||
-          !submission?.lang
-        ) {
-          return;
-        }
-
-        const executor = new CodeExecutor({
-          ...submission,
-        });
-
-        await executor.runCode();
-
-        executor.on(executor.OUPUT_STATUS.success, async (data) => {
-          try {
-            await new Output({
-              ...submission,
-              output: data,
-              status: 200,
-            }).save();
-
-            channel.sendToQueue(
-              process.env.CLEANUP_QUEUE,
-              Buffer.from(
-                JSON.stringify({
-                  submit_id: submission.submit_id,
-                  container_id: executor.container_id,
-                })
-              )
-            );
-          } catch (error) {
-            console.error(error);
-          }
-        });
-
-        executor.on(executor.OUPUT_STATUS.failed, async () => {
-          try {
-            await new Output({
-              ...submission,
-              status: 422,
-            }).save();
-
-            channel.sendToQueue(
-              process.env.CLEANUP_QUEUE,
-              Buffer.from(
-                JSON.stringify({
-                  submit_id: submission.submit_id,
-                  container_id: executor.container_id,
-                })
-              )
-            );
-          } catch (error) {
-            console.error(error);
-          }
-        });
-      } catch (error) {
-        throw error;
+      if (
+        !submission?.code ||
+        !submission?.filename ||
+        !submission?.submit_id ||
+        !submission?.lang
+      ) {
+        return;
       }
+
+      const executor = new CodeExecutor({
+        ...submission,
+      });
+
+      executor.runCode();
+
+      executor.on(executor.OUPUT_STATUS.success, async (data) => {
+        try {
+          await new Output({
+            ...submission,
+            output: data,
+            status: 200,
+          }).save();
+
+          channel.sendToQueue(
+            process.env.CLEANUP_QUEUE,
+            Buffer.from(
+              JSON.stringify({
+                submit_id: submission.submit_id,
+                container_id: executor.container_id,
+              })
+            )
+          );
+        } catch (error) {
+          console.error(error);
+        }
+      });
+
+      executor.on(executor.OUPUT_STATUS.failed, async () => {
+        try {
+          await new Output({
+            ...submission,
+            status: 422,
+          }).save();
+
+          channel.sendToQueue(
+            process.env.CLEANUP_QUEUE,
+            Buffer.from(
+              JSON.stringify({
+                submit_id: submission.submit_id,
+                container_id: executor.container_id,
+              })
+            )
+          );
+        } catch (error) {
+          console.error(error);
+        }
+      });
     });
   } catch (error) {
     console.error(error);

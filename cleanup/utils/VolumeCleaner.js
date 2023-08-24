@@ -1,7 +1,6 @@
 const { rmdir, readdir, unlink, lstat } = require("fs").promises;
 const path = require("path");
-require('dotenv').config()
-const ROOT_DIR = process.env.ROOT_DIR;
+const ROOT_DIR = process.env.DOCKER_ROOT_DIR;
 const VOLUME = process.env.VOLUME;
 
 class VolumeCleaner {

@@ -16,6 +16,8 @@ async function connect() {
         
         if (!Job || !Job.submit_id || !Job.container_id) return;
 
+        console.log(Job)
+
         try {
           await new DockerCleaner({ ...Job }).cleanup();
         } catch (error) {

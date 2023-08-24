@@ -1,3 +1,5 @@
 node_modules/
 .env
 package-lock.json
+code-engine-pair.pem
+.gitignore

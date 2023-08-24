@@ -1,8 +1,9 @@
 const Docker = require("dockerode");
-const EventEmitter = require("events");
 const Volume = require("./Volume");
-const ROOT_DIR = "/app";
-const VOLUME = "shared_volume";
+const EventEmitter = require("events");
+require("dotenv").config();
+const ROOT_DIR = process.env.DOCKER_ROOT_DIR;
+const VOLUME = process.env.VOLUME;
 
 class CodeExecutor extends EventEmitter {
   constructor({ code, input, filename, submit_id, lang }) {
@@ -25,32 +26,12 @@ class CodeExecutor extends EventEmitter {
 
   async collectLogs() {
     try {
-      const container = this.docker.getContainer(this.container_id);
-
-      return await new Promise((resolve, reject) => {
-        container.logs(
-          { follow: true, stdout: true, stderr: true, timestamps: false },
-          async (err, stream) => {
-            if (err) {
-              reject(err);
-            } else {
-              let data = [];
-
-              stream.setEncoding('utf8');
-
-              stream.on("data", (chunk) => {
-                data.push(chunk);
-              });
-
-              stream.on("end", () => {
-                const res = data.join("");
-                resolve(res);
-              });
-            }
-          }
-        );
+      return await this.volume.read({
+        filename: "output.txt",
+        foldername: this.submit_id,
       });
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -75,6 +56,7 @@ class CodeExecutor extends EventEmitter {
 
       this.container_id = container.id;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -83,23 +65,29 @@ class CodeExecutor extends EventEmitter {
     try {
       if (retry_no <= 0) {
         this.emit(this.OUPUT_STATUS.failed);
+        return;
       }
 
       const res = await this.docker.getContainer(this.container_id).inspect();
+      const waiting_time = parseInt(process.env.WAITING_TIME);
 
       if (res.State.Status.localeCompare("exited") == 0) {
-        let output = null;
-
         try {
-          output = await this.collectLogs();
-        } catch (error) {}
-
-        this.emit(this.OUPUT_STATUS.success, output);
+          const output = await this.collectLogs();
+          this.emit(this.OUPUT_STATUS.success, output);
+        } catch (error) {
+          this.emit(this.OUPUT_STATUS.failed);
+          return;
+        }
       } else {
-        setTimeout(() => this.trackContainer({ retry_no: --retry_no }), 500);
+        setTimeout(
+          () => this.trackContainer({ retry_no: --retry_no }),
+          waiting_time
+        );
       }
     } catch (error) {
-      throw error;
+      console.log(error);
+      this.emit(this.OUPUT_STATUS.failed);
     }
   }
 
@@ -111,18 +99,19 @@ class CodeExecutor extends EventEmitter {
         content: this.code,
       });
 
-      if(this.input && this.input.length > 0){
+      if (this.input && this.input.length > 0) {
         await this.volume.create({
-          filename: 'input.txt',
+          filename: "input.txt",
           foldername: this.submit_id,
-          content: this.input
-        })
+          content: this.input,
+        });
       }
 
       await this.createContainer();
-      await this.trackContainer({ retry_no: 5 });
+      await this.trackContainer({ retry_no: parseInt(process.env.RETRY_NO) });
     } catch (error) {
-      throw error;
+      console.log(error);
+      this.emit(this.OUPUT_STATUS.failed);
     }
   }
 }
