@@ -1,14 +1,14 @@
 const { rmdir, readdir, unlink, lstat } = require("fs").promises;
 const path = require("path");
-const ROOT_DIR = process.env.DOCKER_ROOT_DIR;
-const VOLUME = process.env.VOLUME;
 
 class VolumeCleaner {
   constructor({ submit_id }) {
     this.submit_id = submit_id;
   }
 
-  async cleanup(folderPath = `${ROOT_DIR}/${VOLUME}/${this.submit_id}`) {
+  async cleanup(
+    folderPath = `${process.env.ROOT_DIR}/${process.env.VOLUME}/${this.submit_id}`
+  ) {
     try {
       const directory = await readdir(folderPath);
 
@@ -29,6 +29,5 @@ class VolumeCleaner {
     }
   }
 }
-
 
 module.exports = VolumeCleaner;

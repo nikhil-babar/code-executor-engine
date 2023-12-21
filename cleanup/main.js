@@ -2,6 +2,8 @@ const amqp = require("amqplib");
 const DockerCleaner = require("./utils/DockerCleaner");
 const VolumeCleaner = require("./utils/VolumeCleaner");
 
+require("dotenv").config();
+
 async function connect() {
   try {
     const connection = await amqp.connect(process.env.AMQP_URL);
@@ -13,10 +15,10 @@ async function connect() {
       try {
         const Job = JSON.parse(job.content.toString());
         channel.ack(job);
-        
+
         if (!Job || !Job.submit_id || !Job.container_id) return;
 
-        console.log(Job)
+        console.log(Job);
 
         try {
           await new DockerCleaner({ ...Job }).cleanup();
@@ -29,7 +31,6 @@ async function connect() {
         } catch (error) {
           console.error(error);
         }
-        
       } catch (error) {
         throw error;
       }

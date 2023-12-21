@@ -35,7 +35,7 @@ async function checkOutput() {
             submit_id: id,
             response: res.data,
             requestTimeInSeconds,
-          })
+          });
           output.push({
             submit_id: id,
             response: res.data,
